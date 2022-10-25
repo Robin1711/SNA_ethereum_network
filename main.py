@@ -92,10 +92,15 @@ def create_graph(nodes: [str], edges: [((str, str), int)]) -> nx.Graph:
     :return: The loaded graph, an nx.Graph()
     """
     print("Creating graph..")
-    edges = [(n_1, n_2) for (n_1, n_2, weight) in edges]
     G = nx.DiGraph()
     G.add_nodes_from(nodes)
-    G.add_edges_from(edges)
+
+    ###    If no weights needed - use below:
+    # edges = [(n_1, n_2) for (n_1, n_2, weight) in edges]
+    # G.add_edges_from(edges)
+
+    ###   With weights - use below:
+    G.add_weighted_edges_from(edges)
     return G
 
 
