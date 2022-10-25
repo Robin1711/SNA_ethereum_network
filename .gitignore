@@ -1,6 +1,7 @@
 ### MISCELLANEOUS
 .idea/
 data/
+graphs/
 
 ### PYTHON
 # Byte-compiled / optimized / DLL files
