@@ -1,9 +1,8 @@
 ### MISCELLANEOUS
 .idea/
-data/*.zip
-data/*.csv
-graphs/*.gexf
-graphs/*.zip
+*.zip
+*.csv
+*.gexf
 
 ### PYTHON
 # Byte-compiled / optimized / DLL files
