@@ -14,7 +14,7 @@ random.seed(SEED)
 # We can go lower if necessary of course - to decrease dataset even more
 NODE_PERCENTAGE = 0.005     #   0.075
 EDGE_FRACTION = 0.6         #   0.5
-APPLY_FILTERING = True
+APPLY_FILTERING = False
 
 
 def load_complete_graph(year: int) -> nx.Graph:
@@ -26,7 +26,9 @@ def load_complete_graph(year: int) -> nx.Graph:
     path = f"graphs/complete_graphs/transactions_{year}.gexf.zip"
     print(f"LOADING - Loading complete graph from file: {path}")
     zf = zipfile.ZipFile(path)
-    return nx.read_gexf(zf.open(f"transactions_{year}.gexf"))
+    graph = nx.read_gexf(zf.open(f"graphs/complete_graphs/transactions_{year}.gexf"))
+    print(f"LOADED - Loaded complete graph from file")
+    return graph
 
 
 def load_filtered_graph(year: int) -> nx.Graph:
@@ -37,14 +39,16 @@ def load_filtered_graph(year: int) -> nx.Graph:
     """
     path = f"graphs/filtered_graphs/transactions_{year}_filtered.gexf"
     print(f"LOADING - Loading filtered graph from file: {path}")
-    return nx.read_gexf(path=path)
+    graph = nx.read_gexf(path=path)
+    print(f"LOADED - Loaded filtered graph from file")
+    return graph
 
 
 def load_graph(year: int, filtering: bool) -> nx.Graph:
     return load_complete_graph(year) if not filtering else load_filtered_graph(year)
 
 
-def write_grah(year: int, G: nx.Graph, filtering=APPLY_FILTERING) -> None:
+def write_graph(year: int, G: nx.Graph, filtering=APPLY_FILTERING) -> None:
     """
     Save the given graph to a file with the specified year, also dependent on APPLY_FILTERING
     :param G: nx.Graph, graph to be saved
@@ -58,25 +62,25 @@ def write_grah(year: int, G: nx.Graph, filtering=APPLY_FILTERING) -> None:
         path = f"graphs/complete_graphs/transactions_{year}.gexf"
         nx.write_gexf(G, path=path)
         with zipfile.ZipFile(f"graphs/complete_graphs/transactions_{year}.gexf.zip", 'w') as zip:
-            zip.write(f"transactions_{year}.gexf")
-        # Remove the genereted non-zipped file
+            zip.write(f"graphs/complete_graphs/transactions_{year}.gexf")
+        # Remove the generated non-zipped file
         os.remove(path)
+
+    print(f"SAVED - Saved graph to file: {path}")
 
 
 def write_json(year: int, to_be_written: dict, filtering=APPLY_FILTERING, file_name: str="numbers.json") -> None:
     """
     Write given dictionary to specified json file for the specified year.
-    :param year: year for which
-    :param to_be_written: dictionary to be added to the file
+    :param year: year for which data has to be written
+    :param to_be_written: dictionary to be added to the json data
     :param filtering: True | False
     :param file_name: json file to be written to
-    :return:
     """
     graph_numbers = dict()
     if os.path.exists(file_name):
         with open('numbers.json', 'r') as json_file:
             graph_numbers = json.load(json_file)
-            print(f"\tRead from existing json file {file_name}..")
 
     primal_key = f"{year}" if not filtering else f"{year}_filtered"
     if primal_key not in graph_numbers.keys():
@@ -87,7 +91,6 @@ def write_json(year: int, to_be_written: dict, filtering=APPLY_FILTERING, file_n
 
     with open('numbers.json', 'w+', encoding='utf8') as json_file:
         json.dump(graph_numbers, json_file, ensure_ascii=False, indent=2, sort_keys=True)
-        print(f"\tWritten to json file {file_name}..")
 
 
 def load_zipped_data(year: int) -> pd.DataFrame:
@@ -100,6 +103,7 @@ def load_zipped_data(year: int) -> pd.DataFrame:
     zf = zipfile.ZipFile(f"data/transactions_{year}_query_df.csv.zip")
     df = pd.read_csv(zf.open(f"transactions_{year}_query_df.csv"))
     df = df[['from_address', 'to_address']]
+    print("LOADED - Loaded data..")
     return df
 
 
@@ -118,8 +122,8 @@ def get_nodes_and_edges(year: int, df: pd.DataFrame, filtering=APPLY_FILTERING) 
         boolean_series_to = df['to_address'].isin(unique_nodes)
         df_filtered = pd.concat([df[boolean_series_from], df[boolean_series_to]])
         df_filtered = df_filtered.sample(frac=EDGE_FRACTION, random_state=SEED)
-        print(f"\t\tNOTE: Filtering has been applied - limiting the unique nodes and limiting the edges related to them")
-        print(f"\t\t\tThe dataset used now is {((df_filtered.shape[0] / df.shape[0]) * 100):.2f}% of the original")
+        print(f"\tNOTE: Filtering has been applied - limiting the unique nodes and limiting the edges related to them")
+        print(f"\t\tThe dataset used now is {((df_filtered.shape[0] / df.shape[0]) * 100):.2f}% of the original")
         data_stat_dict['percentage_data_used'] = f"{((df_filtered.shape[0] / df.shape[0]) * 100):.2f}%"
         df = df_filtered
 
@@ -182,7 +186,7 @@ def load_create_graph(year: int, filtering=APPLY_FILTERING, load_from_file=None,
         save_to_file = save_to_file if save_to_file is not None else input(f"Save created graph for year={year} and filtering={filtering}? Y/n  ") == 'y'
         if save_to_file:
             start_time = time.time()
-            write_grah(year, G, filtering=filtering)
+            write_graph(year, G, filtering=filtering)
             save_graph_to_file = time.time() - start_time
             print(f"SAVED - Saved the newly created graph to a gexf file in {(save_graph_to_file):.2f}s")
     return G
@@ -194,61 +198,65 @@ def graph_stats(G: nx.Graph) -> dict:
     Statistics/metrics for general comparison between graphs
     :param G: Given graph generated by one of the transaction datasets
     """
+    print("COMPUTING - Graph statistics")
     # Basics
+    start_basics = time.time()
     numbers_dict = dict()
     numbers_dict["basics"] = dict()
     numbers_dict["basics"]["no_nodes"] = G.number_of_nodes()
     numbers_dict["basics"]["no_di_edges"] = G.number_of_edges()
     numbers_dict["basics"]["density"] = nx.density(G)
+    print(f"\tBasics in {time.time()-start_basics:.2f}s")
 
     # Connectedness
+    start_connectedness = time.time()
     numbers_dict["connectedness"] = dict()
     numbers_dict["connectedness"]["no_weakly_connected_components"] = len([len(wcc) for wcc in nx.weakly_connected_components(G)])
     numbers_dict["connectedness"]["largest_weakly_connected_components"] = max([len(wcc) for wcc in nx.weakly_connected_components(G)])
     numbers_dict["connectedness"]["no_strongly_connected_components"] = len([len(scc) for scc in nx.strongly_connected_components(G)])
     numbers_dict["connectedness"]["largest_strongly_connected_components"] = max([len(scc) for scc in nx.strongly_connected_components(G)])
 
+    numbers_dict["connectedness"]["percentage_nodes_largest_weakly_connected_component"]\
+    = f"{numbers_dict['connectedness']['largest_weakly_connected_components'] / numbers_dict['basics']['no_nodes'] * 100:.2f}%"
+    numbers_dict["connectedness"]["percentage_nodes_largest_strongly_connected_component"]\
+        = f"{numbers_dict['connectedness']['largest_strongly_connected_components']/numbers_dict['basics']['no_nodes'] * 100:.2f}%"
+    print(f"\tConnectedness in {time.time()-start_connectedness:.2f}s")
+
     # Paths
+    start_paths = time.time()
     numbers_dict["paths"] = dict()
     numbers_dict["paths"]["no_self_loops"] = nx.number_of_selfloops(G)
-    all_shortest_paths = list(itertools.chain(*[path_dict.values() for (node, path_dict) in nx.shortest_path_length(G)])) # [(str, {str -> int})]
-    numbers_dict["paths"]["average_shortest_path"] = sum(all_shortest_paths)/len(all_shortest_paths)
-    numbers_dict["paths"]["diameter_longest_shortest_path"] = max(all_shortest_paths)
+    # all_shortest_paths = list(itertools.chain(*[path_dict.values() for (node, path_dict) in nx.shortest_path_length(G)])) # [(str, {str -> int})]
+    # numbers_dict["paths"]["average_shortest_path"] = sum(all_shortest_paths)/len(all_shortest_paths)
+    # numbers_dict["paths"]["diameter_longest_shortest_path"] = max(all_shortest_paths)
+    print(f"\tPaths in {time.time()-start_paths:.2f}s")
 
     # Centralities
-    numbers_dict["centralities"] = dict()
-    max_5_degs = ', '.join([f'{val}' for val in sorted((d for n, d in G.degree()), reverse=True)[:5]])
-    max_5_eigenvectors = ', '.join([f'{val:.5f}' for val in sorted((val for val in nx.eigenvector_centrality(G, max_iter=99999).values()), reverse=True)[:5]])
-    max_5_closeness = ', '.join([f'{val:.5f}' for val in sorted((val for val in nx.closeness_centrality(G).values()), reverse=True)[:5]])
-    max_5_betweennes = ', '.join([f'{val:.5f}' for val in sorted((val for val in nx.betweenness_centrality(G).values()), reverse=True)[:5]])
-    numbers_dict["centralities"]["max_5_degree_centralities"] = max_5_degs
-    numbers_dict["centralities"]["max_5_eigenvector_centralities"] = max_5_eigenvectors
-    numbers_dict["centralities"]["max_5_closeness_centralities"] = max_5_closeness
-    numbers_dict["centralities"]["max_5_betweenness_centralities"] = max_5_betweennes
+    # start_centralities = time.time()
+    # numbers_dict["centralities"] = dict()
+    # max_5_degs = ', '.join([f'{val}' for val in sorted((d for n, d in G.degree()), reverse=True)[:5]])
+    # print(f"\t\tDegs done")
+    # max_5_closeness = ', '.join([f'{val:.5f}' for val in sorted((val for val in nx.closeness_centrality(G).values()), reverse=True)[:5]])
+    # print(f"\t\tCloseness done")
+    # # max_5_betweennes = ', '.join([f'{val:.5f}' for val in sorted((val for val in nx.betweenness_centrality(G).values()), reverse=True)[:5]])
+    # # print(f"\t\tBetweeenness done")
+    # max_5_eigenvectors = ', '.join([f'{val:.5f}' for val in sorted((val for val in nx.eigenvector_centrality(G, max_iter=99999).values()), reverse=True)[:5]])
+    # print(f"\t\tEigenvectors done")
+    # numbers_dict["centralities"]["max_5_degree_centralities"] = max_5_degs
+    # numbers_dict["centralities"]["max_5_eigenvector_centralities"] = max_5_eigenvectors
+    # numbers_dict["centralities"]["max_5_closeness_centralities"] = max_5_closeness
+    # # numbers_dict["centralities"]["max_5_betweenness_centralities"] = max_5_betweennes
+    # print(f"\tCentralities in {time.time()-start_centralities:.2f}s")
+    print(f"COMPUTED - Graph statistics in {time.time()-start_basics:.2f}s")
     return numbers_dict
 
 
 if __name__ == "__main__":
-    for year in [2019, 2020, 2022, 2021, 2018]:
-        G = load_create_graph(year=year, load_from_file=False, save_to_file=True)
-        print("Loaded..")
-        numbers_dict = graph_stats(G)
-        print("Numbers dict created..")
-        write_json(year, to_be_written=numbers_dict)
-        print("Writing")
+    year = int(input("What year would you like to analyse? 20xx [2018,2019,2020,2021,2022]\n"))
+    print(f"\n\nYEAR = {year}\n")
+    start_year = time.time()
+    G = load_create_graph(year=year, load_from_file=False, save_to_file=True)
+    numbers_dict = graph_stats(G)
+    write_json(year, to_be_written=numbers_dict)
+    print(f"\nYEAR = {year} done in {time.time()-start_year:.2f}s\n")
 
-    # for year in [2019, 2020, 2022, 2021, 2018]:
-    #     G = load_create_graph(year=year, load_from_file=False, save_to_file=True)
-    #     numbers_dict = graph_stats(G)
-    #     write_json(year, to_be_written=numbers_dict)
-
-    # for year in [2018, 2019, 2020, 2021, 2022]:
-    # for year in [2019, 2020]:    # Two smallest years (~3M nodes)
-    #     G = load_create_graph(year=year, filtering=False, load_from_file=False, save_to_file=True)
-    #     numbers_dict = graph_stats(G)
-    #     write_json(year, filtering=False, to_be_written=numbers_dict)
-    #
-    # for year in [2022, 2021, 2018]:    # Three biggest years (~8, 9, 10M nodes)
-    #     G = load_create_graph(year=year, filtering=False, load_from_file=False, save_to_file=True)
-    #     numbers_dict = graph_stats(G)
-    #     write_json(year, filtering=False, to_be_written=numbers_dict)
