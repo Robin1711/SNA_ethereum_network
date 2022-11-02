@@ -1,4 +1,25 @@
 {
+  "2018": {
+    "basics": {
+      "density": 2.1669468611773077e-07,
+      "no_di_edges": 22993369,
+      "no_nodes": 10300948
+    },
+    "connectedness": {
+      "largest_strongly_connected_components": 6230477,
+      "largest_weakly_connected_components": 10212044,
+      "no_strongly_connected_components": 4044128,
+      "no_weakly_connected_components": 37511,
+      "percentage_nodes_largest_strongly_connected_component": "60.48%",
+      "percentage_nodes_largest_weakly_connected_component": "99.14%"
+    },
+    "mean_edges_per_node": "4.00",
+    "paths": {
+      "no_self_loops": 23788
+    },
+    "percentage_unique_edges": "55.86%",
+    "percentage_unique_nodes": "25.02%"
+  },
   "2018_filtered": {
     "basics": {
       "density": 5.373742638693829e-06,
@@ -171,7 +192,23 @@
     "percentage_unique_nodes": "14.71%"
   },
   "2022": {
+    "basics": {
+      "density": 3.288676004067998e-07,
+      "no_di_edges": 22679298,
+      "no_nodes": 8304324
+    },
+    "connectedness": {
+      "largest_strongly_connected_components": 2224180,
+      "largest_weakly_connected_components": 8008988,
+      "no_strongly_connected_components": 5958022,
+      "no_weakly_connected_components": 132561,
+      "percentage_nodes_largest_strongly_connected_component": "26.78%",
+      "percentage_nodes_largest_weakly_connected_component": "96.44%"
+    },
     "mean_edges_per_node": "5.71",
+    "paths": {
+      "no_self_loops": 134334
+    },
     "percentage_unique_edges": "47.83%",
     "percentage_unique_nodes": "17.51%"
   },
