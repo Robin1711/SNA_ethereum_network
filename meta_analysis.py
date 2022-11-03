@@ -5,6 +5,7 @@ import zipfile
 import time
 import itertools
 
+
 def get_nodes_and_edges(df: pd.DataFrame) -> ([str], [(str, str, int)]):
     """
     Also based on global parameters APPLY_FILTERING, NODE_PERCENTAGE, EDGE_PERCENTAGE
@@ -49,6 +50,7 @@ def nodes_edges(year: int) -> ([str], [(str, str, int)]):
 
 
 def do_intersection(nodes_list: list) -> None:
+    # node_list = [[unique nodes 2018],[unique nodes 2019],[]]
     intersection_set = set(nodes_list[0])
     for nodes in nodes_list[1:]:
         intersection_set = intersection_set.intersection(set(nodes))
@@ -57,6 +59,8 @@ def do_intersection(nodes_list: list) -> None:
     with open('intersection_nodes.json', 'w+', encoding='utf8') as json_file:
         json.dump(list(intersection_set), json_file, ensure_ascii=False, indent=2)
         print(f"\tWritten to intersection_nodes.json.. ")
+
+    return intersection_set
 
 
 def do_union(nodes_list: list) -> None:
@@ -72,12 +76,15 @@ def do_union(nodes_list: list) -> None:
 
 if __name__ == "__main__":
     start_time_program = time.time()
-    # nodes_2018, _ = nodes_edges(2018)
-    # nodes_2019, _ = nodes_edges(2019)
-    # nodes_2020, _ = nodes_edges(2020)
-    # nodes_2021, _ = nodes_edges(2021)
-    # nodes_2022, _ = nodes_edges(2022)
-    # nodes_list = [ nodes_2018, nodes_2019, nodes_2020, nodes_2021, nodes_2022 ]
+    nodes_2018, _ = nodes_edges(2018)
+    nodes_2019, _ = nodes_edges(2019)
+    nodes_2020, _ = nodes_edges(2020)
+    nodes_2021, _ = nodes_edges(2021)
+    nodes_2022, _ = nodes_edges(2022)
+    nodes_list = [ nodes_2018, nodes_2019, nodes_2020, nodes_2021, nodes_2022 ]
+
+    intersection_set = do_intersection(nodes_list)
+    print(len(intersection_set))
 
     with open('union_nodes.json', 'r', encoding='utf8') as json_file:
         union_nodes = json.load(json_file)
