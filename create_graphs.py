@@ -56,44 +56,33 @@ def get_nodes_and_edges(df: pd.DataFrame) -> ([str], [(str, str, int)]):
     return unique_nodes, edges_weights
 
 
-if __name__ == "__main__":
+def print_graph_stats(G: nx.Graph) -> None:
+    print(f"no_nodes {G.number_of_nodes()}")
+    print(f"no_edges {G.number_of_edges()}")
+    print(f"density {nx.density(G)}")
 
-    # for year in [2018,2019,2020,2021,2022]:
-    for year in [2018]:
+    print(f"no_weakly_connected_components {len([len(wcc) for wcc in nx.weakly_connected_components(G)])}")
+    print(f"largest_weakly_connected_components {max([len(wcc) for wcc in nx.weakly_connected_components(G)])}")
+    print(f"no_strongly_connected_components {len([len(scc) for scc in nx.strongly_connected_components(G)])}")
+    print(f"largest_strongly_connected_components {max([len(scc) for scc in nx.strongly_connected_components(G)])}")
+    print(f"no_self_loops {nx.number_of_selfloops(G)}")
+    max_5_degs = ', '.join([f'{val}' for val in sorted((d for n, d in G.degree(weight='weight')), reverse=True)[:5]])
+    print(f"weighted max 5 degrees: {max_5_degs}")
+    max_5_degs = ', '.join([f'{val}' for val in sorted((d for n, d in G.degree(weight=None)), reverse=True)[:5]])
+    print(f"max 5 degrees: {max_5_degs}")
+
+
+if __name__ == "__main__":
+    for year in [2018, 2019, 2020, 2021, 2022]:
         print(f"\nYEAR={year}")
         df = load_zipped_data(year)
         df = update_data(df)
         nodes, edges = get_nodes_and_edges(df)
-        
+
         # Create and save Graph
         G = nx.DiGraph()
         G.add_nodes_from(nodes)
         G.add_weighted_edges_from(edges, weight='weight')
         nx.write_gexf(G, path=f"graphs/intersection_graph_{year}.gexf")
 
-        print(f"no_nodes {G.number_of_nodes()}")
-        print(f"no_edges {G.number_of_edges()}")
-        print(f"density {nx.density(G)}")
-
-        print(f"no_weakly_connected_components {len([len(wcc) for wcc in nx.weakly_connected_components(G)])}")
-        print(f"largest_weakly_connected_components {max([len(wcc) for wcc in nx.weakly_connected_components(G)])}")
-        print(f"no_strongly_connected_components {len([len(scc) for scc in nx.strongly_connected_components(G)])}")
-        print(f"largest_strongly_connected_components {max([len(scc) for scc in nx.strongly_connected_components(G)])}")
-        print(f"no_self_loops {nx.number_of_selfloops(G)}")
-        max_5_degs = ', '.join([f'{val}' for val in sorted((d for n, d in G.degree(weight='weight')), reverse=True)[:5]])
-        print(f"max 5 degrees: {max_5_degs}")
-        max_5_degs = ', '.join([f'{val}' for val in sorted((d for n, d in G.degree(weight=None)), reverse=True)[:5]])
-        print(f"max 5 degrees: {max_5_degs}")
-
-        # start_pr = time.time()
-        # output_pr = nx.pagerank(G)
-        # print(f"pagerank took {time.time()-start_pr:.2f}s")
-
-        # pagerank_values = sorted(output_pr.values(), reverse=True)
-        # pagerank_values = [float(i)/sum(pagerank_values) for i in pagerank_values]
-        # print(pagerank_values)
-        # pagerank_values = [float(i) / max(pagerank_values) for i in pagerank_values]
-        # print(pagerank_values)
-        # plt.hist(pagerank_values)
-        # print(pagerank_values)
-        # plt.show()
+        print_graph_stats(G)
