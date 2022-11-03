@@ -2,7 +2,8 @@
 .idea/
 *.zip
 *.csv
-*.gexf
+graphs/complete_graphs/*.gexf
+graphs/filtered_graphs/*.gexf
 
 ### PYTHON
 # Byte-compiled / optimized / DLL files
