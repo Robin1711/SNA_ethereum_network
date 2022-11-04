@@ -29,11 +29,10 @@ def graph_stats(G: nx.Graph) -> dict:
     stats_dict['no_strongly_connected_components'] = len([len(wcc) for wcc in strongly_connected_components])
     stats_dict['largest_strongly_connected_component'] = max([len(wcc) for wcc in strongly_connected_components])
 
-    max_degs = sorted([deg for deg in G.degree(weight=None)], reverse=True)
+    max_degs = sorted([deg for deg in G.degree(weight=None)], key=lambda x: x[1], reverse=True)
     stats_dict['5_largest_degrees'] = [d for n, d in max_degs[:5]]
     stats_dict['5_nodes_largest_degrees'] = [n for n, d in max_degs[:5]]
 
-    max_weighted_degs = sorted([deg for deg in G.degree(weight='weight')], reverse=True)
     stats_dict['5_largest_weighted_degrees'] = [d for n, d in max_weighted_degs[:5]]
     stats_dict['5_nodes_largest_weighted_degrees'] = [n for n, d in max_weighted_degs[:5]]
 
