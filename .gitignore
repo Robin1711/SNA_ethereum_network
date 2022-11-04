@@ -1,7 +1,6 @@
 ### MISCELLANEOUS
 .idea/
 *.zip
-*.csv
 graphs/complete_graphs/*.gexf
 graphs/filtered_graphs/*.gexf
 

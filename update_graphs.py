@@ -35,8 +35,8 @@ def update_graph(year: int) -> None:
     for update_year in {2018, 2019, 2020, 2021, 2022}.difference({year}):
         G_update = update_graph_with_graph(G_update, load_graph(update_year))
 
-    print(f"Removing self-loops from Graph")
-    G_update.remove_edges_from(nx.selfloop_edges(G_update))
+    # print(f"Removing self-loops from Graph")
+    # G_update.remove_edges_from(nx.selfloop_edges(G_update))
     nx.write_gexf(G_update, f"graphs/updated_intersection_graph_{year}.gexf")
     print_graph_stats(G_update)
 
@@ -70,12 +70,12 @@ if __name__ == "__main__":
 
     for route_idx, graph in zip(YEARS, graph_list):
         # Using year to be route_index
-        edges = [(n1, n2, {'route': route_idx, 'weight': graph.get_edge_data(n1, n2)['weight']})
+        edges = [(n1, n2, {'label': route_idx, 'route': route_idx, 'weight': graph.get_edge_data(n1, n2)['weight']})
                  for (n1, n2) in graph.edges()]
         keys = MDG.add_edges_from(edges)
         print(MDG)
 
-    # graph = nx.write_gexf(MDG, path="graphs/multi_digraph.gexf")
-    # for n in [n for n in graph_list[0].nodes()][:5]:
-    #     print(MDG[n])
-    #     print()
+    graph = nx.write_gexf(MDG, path="graphs/multi_digraph.gexf")
+    for n in [n for n in graph_list[0].nodes()][:5]:
+        print(MDG[n])
+        print()
