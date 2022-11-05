@@ -1,9 +1,7 @@
 import json
-
 import pandas as pd
 import zipfile
 import time
-import itertools
 
 
 def get_nodes_and_edges(df: pd.DataFrame) -> ([str], [(str, str, int)]):
@@ -43,6 +41,9 @@ def load_zipped_data(year: int) -> pd.DataFrame:
 
 
 def nodes_edges(year: int) -> ([str], [(str, str, int)]):
+    """
+    Load nodes and edges from the data
+    """
     start_time_function = time.time()
     ne = get_nodes_and_edges(load_zipped_data(year))
     print(f"In {time.time()-start_time_function:.2f}s\n")
@@ -50,6 +51,9 @@ def nodes_edges(year: int) -> ([str], [(str, str, int)]):
 
 
 def do_intersection(nodes_list: list) -> None:
+    """
+    Intersection on all nodes from all years. Will save the found nodes in intersection_nodes.json
+    """
     # node_list = [[unique nodes 2018],[unique nodes 2019],[]]
     intersection_set = set(nodes_list[0])
     for nodes in nodes_list[1:]:
@@ -64,6 +68,9 @@ def do_intersection(nodes_list: list) -> None:
 
 
 def do_union(nodes_list: list) -> None:
+    """
+    Union on all nodes from all years. Will save the found nodes in union_nodes.json
+    """
     union_set = set(nodes_list[0])
     for nodes in nodes_list[1:]:
         union_set = union_set.union(set(nodes))
